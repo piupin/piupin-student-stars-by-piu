@@ -1,119 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Student Stars</title>
-<style>
-  :root {
-    --border: #ffcc80;
-    --header-bg: #ffeb3b;
-    --header-text: #333;
-    --even-row: #fffde7;
-    --hover-row: #ffe082;
-  }
-  body {
-    font-family: Comic Sans MS, sans-serif;
-    background-color: #fff8e1;
-    text-align: center;
-    padding: 10px;
-  }
-  h1 {
-    color: #ff5722;
-    margin-bottom: 15px;
-  }
-  table {
-    border-collapse: collapse;
-    margin: auto;
-    background-color: #ffffff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    width: 100%;
-    max-width: 800px;
-  }
-  th, td {
-    border: 2px solid var(--border);
-    padding: 10px 8px;
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-  }
-  th.no, td.no { text-align: center; width: 1%; }
-  th.name, td.name { text-align: left; }
-  th.stars, td.stars { text-align: left; min-width: 120px; }
-  th.total, td.total { text-align: center; width: 1%; }
-
-  th {
-    background-color: var(--header-bg);
-    color: var(--header-text);
-  }
-  tr:nth-child(even) { background-color: var(--even-row); }
-  tr:hover { background-color: var(--hover-row); }
-  .stars-inner {
-    font-size: 1.3rem;
-    display: inline-block;
-    white-space: nowrap;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Student Stars</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFD700">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <style>
+    body {
+      font-family: Comic Sans MS, sans-serif;
+      background-color: #fff8e1;
+      text-align: center;
+      padding: 10px;
+      margin: 0;
+    }
+    h1 {
+      color: #ff5722;
+      font-size: 1.5em;
+    }
+    table {
+      border-collapse: collapse;
+      margin: auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      width: 100%;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 2px solid #ffcc80;
+      padding: 8px;
+      font-size: 1em;
+      word-wrap: break-word;
+    }
+    th {
+      background-color: #ffeb3b;
+      color: #333;
+    }
+    th:nth-child(1), td:nth-child(1) {
+      width: 40px;
+    }
+    th:nth-child(2), td:nth-child(2) {
+      text-align: left;
+    }
+    th:nth-child(3), td:nth-child(3) {
+      text-align: left;
+      width: 40%;
+    }
+    th:nth-child(4), td:nth-child(4) {
+      width: 60px;
+      text-align: center;
+    }
+    tr:nth-child(even) {
+      background-color: #fffde7;
+    }
+    tr:hover {
+      background-color: #ffe082;
+    }
+    .stars {
+      font-size: 22px;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
-<h1>🌟 Student Star Points 🌟</h1>
-<table id="studentTable">
-  <thead>
-    <tr>
-      <th class="no">No.</th>
-      <th class="name">Name</th>
-      <th class="stars">Stars</th>
-      <th class="total">Total</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <h1>🌟 Student Star Points 🌟</h1>
+  <table id="studentTable">
+    <thead>
+      <tr>
+        <th>No.</th>
+        <th>Name</th>
+        <th>Stars</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<script>
-const sheetID = "1f4qn9xI0iSxyQz_JRuP3RrCuPnXO3BV12KopVKI3qks";
-const sheetName = "Sheet1";
-const query = encodeURIComponent("SELECT A,B");
-const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}&tq=${query}`;
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
 
-fetch(url)
-  .then(res => res.text())
-  .then(data => {
-    const json = JSON.parse(data.substr(47).slice(0, -2));
-    const rows = json.table.rows;
-    let students = [];
+    const sheetID = "1f4qn9xI0iSxyQz_JRuP3RrCuPnXO3BV12KopVKI3qks";
+    const sheetName = "Sheet1";
+    const query = encodeURIComponent("SELECT B");
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}&tq=${query}`;
 
-    rows.forEach(row => {
-      const name = row.c[0]?.v || "";
-      const starsText = row.c[1]?.v || "";
-      const total = (starsText.match(/🌟/g) || []).length;
-      if (name) {
-        students.push({ name, starsText, total });
-      }
-    });
+    fetch(url)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const tbody = document.querySelector("#studentTable tbody");
 
-    // Sort by total stars descending
-    students.sort((a, b) => b.total - a.total);
+        rows.forEach((row, index) => {
+          const stars = row.c[0]?.v || "";
+          const total = (stars.match(/🌟/g) || []).length;
 
-    const tbody = document.querySelector("#studentTable tbody");
-    students.forEach((item, index) => {
-      let noCell = index + 1;
-      if (index === 0) noCell = "🥇";
-      else if (index === 1) noCell = "🥈";
-      else if (index === 2) noCell = "🥉";
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="no">${noCell}</td>
-        <td class="name">${item.name}</td>
-        <td class="stars"><span class="stars-inner">${item.starsText}</span></td>
-        <td class="total">${item.total}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  });
-</script>
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>Student ${index + 1}</td>
+            <td class="stars">${stars}</td>
+            <td>${total}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+  </script>
 </body>
 </html>
+
