@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>Student Stars</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFD700">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <style>
     body {
       font-family: Comic Sans MS, sans-serif;
@@ -36,35 +39,30 @@
       background-color: #ffeb3b;
       color: #333;
     }
-
-    /* Default (PC / larger screens) */
+    /* No. column - very narrow */
     th:nth-child(1), td:nth-child(1) {
       width: 40px;
       text-align: center;
     }
+    /* Name column - narrow but flexible */
     th:nth-child(2), td:nth-child(2) {
+      width: 20%;
+      min-width: 80px;
       text-align: left;
-      width: 35%; /* wider for PC */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    /* Stars column - biggest space */
     th:nth-child(3), td:nth-child(3) {
+      width: 55%;
       text-align: left;
-      width: 45%;
     }
+    /* Total column - small fixed width */
     th:nth-child(4), td:nth-child(4) {
       width: 60px;
       text-align: center;
     }
-
-    /* Mobile adjustments */
-    @media (max-width: 600px) {
-      th:nth-child(2), td:nth-child(2) {
-        width: 25%; /* Narrower names */
-      }
-      th:nth-child(3), td:nth-child(3) {
-        width: 55%; /* Bigger stars */
-      }
-    }
-
     tr:nth-child(even) {
       background-color: #fffde7;
     }
@@ -74,6 +72,9 @@
     .stars {
       font-size: 22px;
       text-align: left;
+      white-space: nowrap;
+      overflow-x: auto;
+      display: block;
     }
   </style>
 </head>
@@ -92,6 +93,11 @@
   </table>
 
   <script>
+    // Register service worker for PWA
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+
     const sheetID = "1f4qn9xI0iSxyQz_JRuP3RrCuPnXO3BV12KopVKI3qks";
     const sheetName = "Sheet1";
     const query = encodeURIComponent("SELECT A,B");
@@ -107,12 +113,12 @@
         rows.forEach((row, index) => {
           const name = row.c[0]?.v || "";
           const stars = row.c[1]?.v || "";
-          const total = (stars.match(/🌟/gu) || []).length;
+          const total = (stars.match(/🌟/g) || []).length;
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${index + 1}</td>
-            <td>${name}</td>
+            <td title="${name}">${name}</td>
             <td class="stars">${stars}</td>
             <td>${total}</td>
           `;
