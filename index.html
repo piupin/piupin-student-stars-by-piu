@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <title>Student Stars</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#FFD700">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <style>
     body {
       font-family: Comic Sans MS, sans-serif;
@@ -39,23 +36,35 @@
       background-color: #ffeb3b;
       color: #333;
     }
-    /* Column widths */
+
+    /* Default (PC / larger screens) */
     th:nth-child(1), td:nth-child(1) {
-      width: 40px; /* No. */
+      width: 40px;
       text-align: center;
     }
     th:nth-child(2), td:nth-child(2) {
       text-align: left;
-      width: 25%; /* Narrow names */
+      width: 35%; /* wider for PC */
     }
     th:nth-child(3), td:nth-child(3) {
       text-align: left;
-      width: 55%; /* Bigger stars column */
+      width: 45%;
     }
     th:nth-child(4), td:nth-child(4) {
-      width: 60px; /* Total */
+      width: 60px;
       text-align: center;
     }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      th:nth-child(2), td:nth-child(2) {
+        width: 25%; /* Narrower names */
+      }
+      th:nth-child(3), td:nth-child(3) {
+        width: 55%; /* Bigger stars */
+      }
+    }
+
     tr:nth-child(even) {
       background-color: #fffde7;
     }
@@ -83,11 +92,6 @@
   </table>
 
   <script>
-    // Register service worker for PWA
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js");
-    }
-
     const sheetID = "1f4qn9xI0iSxyQz_JRuP3RrCuPnXO3BV12KopVKI3qks";
     const sheetName = "Sheet1";
     const query = encodeURIComponent("SELECT A,B");
@@ -103,7 +107,7 @@
         rows.forEach((row, index) => {
           const name = row.c[0]?.v || "";
           const stars = row.c[1]?.v || "";
-          const total = (stars.match(/🌟/gu) || []).length; // count exactly, no double
+          const total = (stars.match(/🌟/gu) || []).length;
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
