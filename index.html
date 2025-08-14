@@ -103,7 +103,7 @@
         rows.forEach((row, index) => {
           const name = row.c[0]?.v || "";
           const stars = row.c[1]?.v || "";
-          const total = (stars.match(/🌟/g) || []).length;
+          const total = (stars.match(/🌟/gu) || []).length; // count exactly, no double
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
