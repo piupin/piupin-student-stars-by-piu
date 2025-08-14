@@ -24,7 +24,7 @@
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       width: 100%;
-      table-layout: fixed; /* Force fixed widths */
+      table-layout: fixed;
     }
     th, td {
       border: 2px solid #ffcc80;
@@ -35,10 +35,9 @@
       background-color: #ffeb3b;
       color: #333;
     }
-    /* Column widths */
-    th:nth-child(1), td:nth-child(1) { width: 40px; text-align: center; }
-    th:nth-child(2), td:nth-child(2) { width: 100px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    th:nth-child(3), td:nth-child(3) { width: 60%; text-align: left; }
+    th:nth-child(1), td:nth-child(1) { width: 50px; text-align: center; }
+    th:nth-child(2), td:nth-child(2) { width: 80px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    th:nth-child(3), td:nth-child(3) { width: 65%; text-align: left; }
     th:nth-child(4), td:nth-child(4) { width: 50px; text-align: center; }
 
     tr:nth-child(even) {
@@ -71,7 +70,7 @@
   <script>
     const sheetID = "1f4qn9xI0iSxyQz_JRuP3RrCuPnXO3BV12KopVKI3qks";
     const sheetName = "Sheet1";
-    const query = encodeURIComponent("SELECT A,B OFFSET 1"); // Skip header row
+    const query = encodeURIComponent("SELECT A,B"); // ✅ no offset, includes first row
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetName}&tq=${query}`;
 
     fetch(url)
@@ -80,7 +79,6 @@
         const json = JSON.parse(data.substr(47).slice(0, -2));
         let rows = json.table.rows;
 
-        // Convert rows to objects with name, stars, total
         let students = rows.map(row => {
           const name = row.c[0]?.v || "";
           const stars = row.c[1]?.v || "";
@@ -88,15 +86,24 @@
           return { name, stars, total };
         });
 
-        // Sort by total stars DESC
-        students.sort((a, b) => b.total - a.total);
+        // Sort by total stars DESC, then name ASC if tie
+        students.sort((a, b) => {
+          if (b.total === a.total) {
+            return a.name.localeCompare(b.name);
+          }
+          return b.total - a.total;
+        });
 
-        // Build table
         const tbody = document.querySelector("#studentTable tbody");
         students.forEach((student, index) => {
+          let rankSymbol = index + 1;
+          if (index === 0) rankSymbol = "🥇";
+          else if (index === 1) rankSymbol = "🥈";
+          else if (index === 2) rankSymbol = "🥉";
+
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${index + 1}</td>
+            <td>${rankSymbol}</td>
             <td title="${student.name}">${student.name}</td>
             <td class="stars">${student.stars}</td>
             <td>${student.total}</td>
